@@ -1,0 +1,88 @@
+section.blog-controls {
+
+}
+
+.blog-list {
+  margin: 20px;
+  .blog-post {
+    margin: 50px 0;
+    border-bottom: 2px solid rgba(0,0,0,0.2);
+
+    header {
+      h1 {
+        margin: 0;
+      }
+      .info {
+        border-bottom: 1px dashed rgba(0,0,0,0.2);
+        opacity: .8;
+        .author {
+        }
+        time {
+        }
+      }
+    }
+    summary {
+      font-size: medium;
+      margin: 20px 0;
+    }
+  }
+}
+
+.blog-post {
+  header {
+    h1 {
+    }
+    .info {
+      color: #666;
+
+      .author {
+        font-weight: bold;
+        color: orange;
+      }
+      time {
+        font-style: italic;
+      }
+    }
+  }
+  article {
+    &.editing {
+      float: left;
+      background-color: rgba(0,0,0,.1);
+      width: 49%;
+      margin-top: 1em;
+    }
+  }
+  #mdblog-clone {
+    float: right;
+    width: 49%;
+  }
+}
+
+#mdblog-new {
+  background-color: rgba(0,0,0,1);
+}
+
+#mdblog-save {
+  background-color: rgba(50,50,200,1);
+}
+
+#mdblog-unpublish {
+  background-color: rgba(200,0,0,1);
+}
+
+#mdblog-publish {
+  background-color: rgba(0,156,0,1);
+}
+
+#mdblog-archive {
+  background-color: rgba(0,0,0,.5);
+}
+
+#mdblog-unarchive {
+  background-color: rgba(0,0,0,.5);
+}
+
+#mdblog-delete {
+  background-color: rgba(200,100,100,1);
+}
+
