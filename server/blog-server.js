@@ -1,123 +1,126 @@
 (function () {
+	'use strict';
 
-  'use strict';
+	var insertBlogPost = function (post) {
+		var date = new Date(),
+			userId = this.userId;
 
-  MeteorSettings.setDefaults({ public: {
-    blog: { defaultLocale: "en" }
-  }}, MeteorSettings.REQUIRED_IN_PROD);
+		post.published = post.published ? post.published : false;
+		post.archived = post.archived ? post.archived : false;
+		post.slug = _getSlug(post.title);
 
-  Meteor.publish('blog', function () {
-    if (Roles.userIsInRole(this.userId, ['mdblog-author'])) {
-      return Blog.find();
-    } else {
-      return Blog.find({published: true});
-    }
-  });
+		_.extend(post, {
+			_id: Random.id(),
+			created_at: date,
+			updated_at: date,
+			created_by: userId,
+			updated_by: userId
+		});
 
-  function _upsertBlogPost (blog) {
-    blog.published = blog.published ? blog.published : false;
-    blog.archived = blog.archived ? blog.archived : false;
-    blog.slug = _getSlug(blog.title);
+		post.shortId = post._id.substring(0, 5);
 
-    // if no id was provided, this is a new blog entry so we should create an ID here to extract
-    // a short ID before this blog is inserted into the DB
-    var id = blog._id;
-    if (!id) {
-      id = new Meteor.Collection.ObjectID()._str;
-    } else {
-      delete blog._id;
-    }
-    blog.shortId = id.substring(0, 5);
+		BlogPosts.insert(post);
+		return post;
+	};
 
-    Blog.upsert(id, {$set: blog});
-  }
+	var updateBlogPost = function (post) {
+		var id = post._id,
+			userId = this.userId;
 
-  function _sendEmail (blog) {
+		post.updated_at = new Date();
+		post.updated_by = userId;
 
-    var addresses = Meteor.users.find(
-      { 'emails.address': { $ne: '' } } ).map(
-      function(doc) { return doc.emails[0].address });
+		return BlogPosts.update({_id: id}, { $set: post });
+	};
 
-    console.info("Sending email for '" + blog.title + "' to "
-      + addresses.length + ' recipient(s):', addresses);
+	function _sendEmail (blog) {
 
-    var sender = Meteor.user().emails[0].address;
-    Email.send({
-      to: sender,
-      bcc: addresses,
-      from: sender,
-      subject: blog.title,
-      html: SSR.render('publishEmail', {
-        summary: blog.summary,
-        url: getBlogPostUrl(blog),
-        read_more: TAPi18n.__('read_more', {},
-          Meteor.settings.public.blog.defaultLocale)
-        })
-    });
-  }
+		var addresses = Meteor.users.find(
+			{ 'emails.address': { $ne: '' } }).map(
+			function (doc) { return doc.emails[0].address });
 
-  function _removePost (blog) { Blog.remove(blog._id); }
+		console.info("Sending email for '" + blog.title + "' to "
+		             + addresses.length + ' recipient(s):', addresses);
 
-  var _authorRoleRequired = function (func) {
-    return function(blog) {
-      if (Roles.userIsInRole(this.userId, ['mdblog-author'])) {
-        func(blog);
-        return blog;
-      } else {
-        throw new Meteor.Error(403, "Not authorized");
-      }
-    }
-  }
+		var sender = Meteor.user().emails[0].address;
+		Email.send({
+			to: sender,
+			bcc: addresses,
+			from: sender,
+			subject: blog.title,
+			html: SSR.render('publishEmail', {
+				summary: blog.summary,
+				url: getBlogPostUrl(blog),
+				read_more: TAPi18n.__('read_more', {}, Blog.config('defaultLocale'))
+			})
+		});
+	}
 
-  Meteor.methods({
-    'upsertBlog': _authorRoleRequired( _upsertBlogPost ),
-    'sendEmail': _authorRoleRequired( _sendEmail ),
-    'deleteBlog': _authorRoleRequired( _removePost ),
-    'mdBlogCount': function () {
-      if (Roles.userIsInRole(this.userId, ['mdblog-author'])) {
-        return Blog.find().count();
-      } else {
-        return Blog.find({published: true}).count();
-      }
-    }
-  });
+	function _removePost (blog) { BlogPosts.remove(blog._id); }
 
-  function _getSlug (title) {
+	var ensureAuthenticated = function (func) {
+		return function (blog) {
+			var userId = this.userId;
+			if (!!userId && Roles.userIsInRole(userId, _.map(Blog.config('roles'), function (r) { return r;}))) {
+				return func.call(this, blog);
+			}
+			else {
+				throw new Meteor.Error(403, "Not authorized");
+			}
+		}
+	};
 
-    var replace = [
-      ' ', '#', '%', '"', ':', '/', '?',
-      '^', '`', '[', ']', '{', '}', '<', '>',
-      ';', '@', '&', '=', '+', '$', '|', ','
-    ];
+	Meteor.methods({
+		'insertBlogPost': ensureAuthenticated(insertBlogPost),
+		'updateBlogPost': ensureAuthenticated(updateBlogPost),
+		'sendEmail': ensureAuthenticated(_sendEmail),
+		'deleteBlog': ensureAuthenticated(_removePost),
+		'mdBlogCount': function () {
+			if (Roles.userIsInRole(this.userId, _.map(Blog.config('roles'), function (r) { return r;}))) {
+				return BlogPosts.find().count();
+			}
+			else {
+				return BlogPosts.find({ published: true }).count();
+			}
+		}
+	});
 
-    var slug = title.toLowerCase();
-    for (var i = 0; i < replace.length; i++) {
-      slug = _replaceAll(replace[i], '-', slug);
-    }
-    return slug;
-  }
+	function _getSlug (title) {
 
-  function _replaceAll (find, replace, str) {
-    return str.replace(new RegExp('\\' + find, 'g'), replace);
-  }
+		var replace = [
+			' ', '#', '%', '"', ':', '/', '?',
+			'^', '`', '[', ']', '{', '}', '<', '>',
+			';', '@', '&', '=', '+', '$', '|', ','
+		];
+
+		var slug = title.toLowerCase();
+		for (var i = 0; i < replace.length; i++) {
+			slug = _replaceAll(replace[i], '-', slug);
+		}
+		return slug;
+	}
+
+	function _replaceAll (find, replace, str) {
+		return str.replace(new RegExp('\\' + find, 'g'), replace);
+	}
 
 
-  Meteor.startup(function () {
-    if (!!process.env.AUTO_RESET && process.env.NODE_ENV === 'development') {
-      Blog.remove({});
-    }
-    if (Blog.find().count() === 0) {
-      var locale = Meteor.settings.public.blog.defaultLocale;
-      _upsertBlogPost({
-        published: true,
-        archived: false,
-        title: TAPi18n.__("blog_post_setup_title", null, locale),
-        author: TAPi18n.__("blog_post_setup_author", null, locale),
-        date: new Date().getTime(),
-        summary: TAPi18n.__("blog_post_setup_summary", null, locale),
-        content: TAPi18n.__("blog_post_setup_contents", null, locale)
-      });
-    }
-  });
+	Meteor.startup(function () {
+		if (!!process.env.AUTO_RESET && process.env.NODE_ENV === 'development') {
+			BlogPosts.remove({});
+		}
+		//if (BlogPosts.find().count() === 0) {
+		//	var locale = Meteor.settings.public.blog.defaultLocale;
+		//	_upsertBlogPost({
+		//		published: true,
+		//		archived: false,
+		//		title: TAPi18n.__("blog_post_setup_title", null, locale),
+		//		author: TAPi18n.__("blog_post_setup_author", null, locale),
+		//		date: new Date().getTime(),
+		//		summary: TAPi18n.__("blog_post_setup_summary", null, locale),
+		//		content: TAPi18n.__("blog_post_setup_contents", null, locale)
+		//	});
+		//}
+	});
 
 })();

@@ -1,10 +1,7 @@
 (function () {
-
   'use strict';
 
-  MeteorSettings.setDefaults({ public: { blog: {} }});
-
-  var blogSub = Meteor.subscribe('blog');
+  var blogSub = Meteor.subscribe('blog.posts');
 
   Router.map(function () {
     this.route('blogList', {
@@ -15,8 +12,8 @@
         this.render('blogList');
       },
       data: function () {
-        var sort = Meteor.settings.public.blog.sortBy;
-        return Blog.find({archived: false}, {sort: sort ? sort : {date: -1}});
+        var sort = Blog.config('sortBy');
+        return BlogPosts.find({archived: false}, {sort: sort ? sort : {date: -1}});
       }
     });
 
@@ -28,8 +25,8 @@
         this.render('blogList');
       },
       data: function () {
-        var sort = Meteor.settings.public.blog.sortBy;
-        return Blog.find({archived: true}, {sort: sort ? sort : {date: -1}});
+        var sort = Blog.config('sortBy');
+        return BlogPosts.find({archived: true}, {sort: sort ? sort : {date: -1}});
       }
     });
 
@@ -42,7 +39,7 @@
       },
       data: function () {
         if (this.ready()) {
-          var blog = Blog.findOne({slug: this.params.slug});
+          var blog  = BlogPosts.findOne({slug: this.params.slug});
           if (blog) {
             blog.loaded = true;
             return blog;

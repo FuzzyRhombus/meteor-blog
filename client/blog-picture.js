@@ -1,16 +1,7 @@
-MeteorSettings.setDefaults({ public:
-  { blog:
-    { pictures: {
-        maxWidth : 800,
-        maxHeight : 800
-      }
-    }
-  }
-});
 
 _allowPictureUpload = function () {
 
-  return Meteor.settings.public.blog.pictures.Slingshot;
+  return Blog.config('pictures.Slingshot');
 };
 
 _insertPictures = function (blogPost, files) {
@@ -25,8 +16,8 @@ _insertPictures = function (blogPost, files) {
 
 function __insertPicture (blogPost, file) {
 
-  var maxWidth = Meteor.settings.public.blog.pictures.maxWidth;
-  var maxHeight = Meteor.settings.public.blog.pictures.maxHeight;
+  var maxWidth = Blog.config('pictures.maxWidth');
+  var maxHeight = Blog.config('pictures.maxHeight');
 
   function doneUploading (error, downloadUrl) {
 
@@ -54,7 +45,7 @@ function __insertPicture (blogPost, file) {
       blob = file;
     }
 
-    var uploader = new Slingshot.Upload(Meteor.settings.public.blog.pictures.Slingshot.directive);
+    var uploader = new Slingshot.Upload(Blog.config('pictures.Slingshot.directive'));
     uploader.send( blob, doneUploading );
   }
 

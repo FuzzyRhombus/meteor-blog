@@ -1,0 +1,27 @@
+<template name="blogControls">
+    <section class="blog-controls">
+        {{#if modified}}
+            <button title="Save" id="mdblog-save" class="{{mdBlogElementClasses 'button'}}">
+                <i class="fa fa-floppy-o">{{_ "save"}}</i>
+            </button>
+        {{/if}}
+        {{#unless published}}
+            <button title="Publish" id="mdblog-publish" class="{{mdBlogElementClasses 'button'}}">
+                <i class="fa fa-play"></i>{{_ "publish"}}</button>
+        {{/unless}}
+        {{#if published}}
+            <button title="Unpublish" id="mdblog-unpublish" class="{{mdBlogElementClasses
+            'button'}}"><i class="fa fa-stop"></i>{{_ "unpublish"}}</button>
+        {{/if}}
+        {{#unless archived}}
+            <button title="Archive" id="mdblog-archive" class="{{mdBlogElementClasses 'button'}}">
+                <i class="fa fa-eye-slash"></i>{{_ "archive"}}</button>
+        {{/unless}}
+        {{#if archived}}
+            <button title="Unarchive" id="mdblog-unarchive" class="{{mdBlogElementClasses 'button'}}">
+                <i class="fa fa-eye"></i>{{_ "unarchive"}}</button>
+        {{/if}}
+        <button title="Delete" id="mdblog-delete" class="{{mdBlogElementClasses 'button'}}">
+            <i class="fa fa-trash"></i>{{_ "delete"}}</button>
+    </section>
+</template>
