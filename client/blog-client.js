@@ -75,7 +75,6 @@ function _new () {
 	var author = Meteor.user().profile && Meteor.user().profile.name ? Meteor.user().profile.name : Meteor.user().emails[0].address;
 	var newBlog = {
 		title: TAPi18n.__("new_post_title"),
-		date: new Date(),
 		author: author,
 		summary: _getRandomSummary(),
 		content: TAPi18n.__("new_post_contents")

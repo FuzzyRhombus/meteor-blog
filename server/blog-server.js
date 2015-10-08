@@ -5,6 +5,9 @@
 		var date = new Date(),
 			userId = this.userId;
 
+		var dupes = BlogPosts.find({title: post.title}).count();
+		if (dupes) post.title += '-' + dupes;
+
 		post.published = post.published ? post.published : false;
 		post.archived = post.archived ? post.archived : false;
 		post.slug = _getSlug(post.title);
@@ -13,6 +16,7 @@
 			_id: Random.id(),
 			created_at: date,
 			updated_at: date,
+			published_date: null,
 			created_by: userId,
 			updated_by: userId
 		});
