@@ -11,6 +11,7 @@ Npm.depends({
 });
 
 Package.onUse(function (api) {
+	api.versionsFrom('1.2');
 
 	var clientServer = ['client', 'server'];
 
@@ -20,7 +21,10 @@ Package.onUse(function (api) {
 	api.use(['email@1.0.5']);
 
 	api.use([
-		'iron:router@1.0.0',
+		//'iron:router@1.0.0',
+		'kadira:flow-router@2.7.0',
+		'kadira:blaze-layout@2.1.0',
+		'arillo:flow-router-helpers@0.4.5',
 		'chuangbo:marked@0.3.5',
 		'momentjs:moment@2.0.0',
 		'alanning:roles@1.2.13',
@@ -42,6 +46,7 @@ Package.onUse(function (api) {
 
 	// Common
 	api.addFiles([
+		'lib/util.js',
 		'lib/blog-collections.js',
 		'lib/blog.js',
 		'lib/schema.js',
@@ -75,6 +80,7 @@ Package.onUse(function (api) {
 		"i18n/fr.i18n.json"
 	], clientServer);
 
+	api.imply('kadira:flow-router');
 	api.export('Blog', clientServer);
 
 });

@@ -6,19 +6,19 @@
                     <i class="fa fa-pencil-square-o"></i>{{_ "new"}}</button>
             </section>
         {{/if}}
-        {{#each this}}
+        {{#each posts}}
             <section class="blog-post">
                 {{#if isInRole 'mdblog-author'}}
                     {{> blogControls }}
                 {{/if}}
                 <header>
-                    <h2><a href="{{pathFor route='blogPost'}}">{{title}}</a></h2>
+                    <h2><a href="{{pathFor 'blogPost' slug=slug year=year month=month}}">{{title}}</a></h2>
                       <span class="info">{{_ "posted_by"}}<span class="author">{{author}}</span>
                           <time>{{mdBlogDate date}}</time>
                       </span>
                 </header>
                 <summary>
-                    {{{summary}}} <a href="{{pathFor route='blogPost'}}">{{_ "read_more"}}
+                    {{{summary}}} <a href="{{pathFor 'blogPost' slug=slug year=year month=month}}">{{_ "read_more"}}
                     <i class="fa fa-long-arrow-right"></i></a>
                 </summary>
             </section>

@@ -1,53 +1,60 @@
 (function () {
 	'use strict';
 
-	var blogSub = Meteor.subscribe('blog.posts');
+	FlowRouter.wait();
 
-	Router.map(function () {
-		this.route('blogList', {
-			path: getBaseBlogPath(),
-			layoutTemplate: 'blogListLayout',
-			action: function () {
-				this.wait(blogSub);
-				this.render('blogList');
-			},
-			data: function () {
-				var sort = Blog.config('sortBy');
-				return BlogPosts.find({ archived: false }, { sort: sort ? sort : { date: -1 } });
-			}
+	// Wait for config to be available, then setup routes
+	Tracker.autorun(function (c) {
+		if (!Blog.config('routes')) return;
+		setupRoutes({
+			base: getBlogBasePath(),
+			archives: Blog.config('enableArchive') ? getBlogArchivePaths() : false,
+			post: getBlogPostPath()
 		});
-
-		this.route('blogListArchive', {
-			path: getBaseArchivePath(),
-			layoutTemplate: 'blogListLayout',
-			action: function () {
-				this.wait(blogSub);
-				this.render('blogList');
-			},
-			data: function () {
-				var sort = Blog.config('sortBy');
-				return BlogPosts.find({ archived: true }, { sort: sort ? sort : { date: -1 } });
-			}
-		});
-
-		this.route('blogPost', {
-			path: getBlogPostPath(':shortId', ':slug'),
-			layoutTemplate: 'blogPostLayout',
-			action: function () {
-				this.wait(blogSub);
-				this.render('blogPost');
-			},
-			data: function () {
-				if (this.ready()) {
-					var blog = BlogPosts.findOne({ slug: this.params.slug });
-					if (blog) {
-						blog.loaded = true;
-						return blog;
-					}
-					this.render('not-found')
-				}
-			}
-		});
-
+		FlowRouter.initialize();
+		c.stop();
 	});
+
+	function setupRoutes(config) {
+		var blogRoutes = FlowRouter.group({
+			prefix: config.base
+		});
+
+		blogRoutes.route('/', {
+			name: 'blogBase',
+			action: function () {
+				BlazeLayout.render('blogList');
+			}
+		});
+
+		_.each(config.archives, function (path) {
+			blogRoutes.route(path, {
+				name: 'archive' + path.replace(/\(.+$/ig, '').replace(/[^a-z]*/ig, '').capitalizeFirstLetter(),
+				action: renderBlog
+			});
+		});
+
+		blogRoutes.route(config.post, {
+			name: 'blogPost',
+			action: renderBlog
+		});
+
+		function renderBlog (params, queryParams) {
+			if (!params || !_.keys(params).length) return;
+			var route = FlowRouter.getRouteName();
+			// Check date params
+			if (params.year) {
+				var year = parseInt(params.year),
+					month = parseInt(params.month);
+				if (month > 12) return FlowRouter.go('archiveYear', { year: year });
+
+				//FlowRouter.setParams({ year: year, month: month });
+				//var range = getDateRange(params.year, params.month);
+				//if (range) FlowRouter.setParams({date: range});
+			}
+			if (route === 'blogPost' && params.slug) BlazeLayout.render('blogPost');
+			else BlazeLayout.render('blogList');
+		}
+	}
+
 })();

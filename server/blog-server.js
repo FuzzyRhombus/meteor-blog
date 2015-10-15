@@ -9,7 +9,6 @@
 		if (dupes) post.title += '-' + dupes;
 
 		post.published = post.published ? post.published : false;
-		post.archived = post.archived ? post.archived : false;
 		post.slug = _getSlug(post.title);
 
 		_.extend(post, {
@@ -20,8 +19,6 @@
 			created_by: userId,
 			updated_by: userId
 		});
-
-		post.shortId = post._id.substring(0, 5);
 
 		BlogPosts.insert(post);
 		return post;
@@ -37,28 +34,28 @@
 		return BlogPosts.update({_id: id}, { $set: post });
 	};
 
-	function _sendEmail (blog) {
-
-		var addresses = Meteor.users.find(
-			{ 'emails.address': { $ne: '' } }).map(
-			function (doc) { return doc.emails[0].address });
-
-		console.info("Sending email for '" + blog.title + "' to "
-		             + addresses.length + ' recipient(s):', addresses);
-
-		var sender = Meteor.user().emails[0].address;
-		Email.send({
-			to: sender,
-			bcc: addresses,
-			from: sender,
-			subject: blog.title,
-			html: SSR.render('publishEmail', {
-				summary: blog.summary,
-				url: getBlogPostUrl(blog),
-				read_more: TAPi18n.__('read_more', {}, Blog.config('defaultLocale'))
-			})
-		});
-	}
+	//function _sendEmail (blog) {
+	//
+	//	var addresses = Meteor.users.find(
+	//		{ 'emails.address': { $ne: '' } }).map(
+	//		function (doc) { return doc.emails[0].address });
+	//
+	//	console.info("Sending email for '" + blog.title + "' to "
+	//	             + addresses.length + ' recipient(s):', addresses);
+	//
+	//	var sender = Meteor.user().emails[0].address;
+	//	Email.send({
+	//		to: sender,
+	//		bcc: addresses,
+	//		from: sender,
+	//		subject: blog.title,
+	//		html: SSR.render('publishEmail', {
+	//			summary: blog.summary,
+	//			url: getBlogPostUrl(blog),
+	//			read_more: TAPi18n.__('read_more', {}, Blog.config('defaultLocale'))
+	//		})
+	//	});
+	//}
 
 	function _removePost (blog) { BlogPosts.remove(blog._id); }
 
@@ -77,7 +74,7 @@
 	Meteor.methods({
 		'insertBlogPost': ensureAuthenticated(insertBlogPost),
 		'updateBlogPost': ensureAuthenticated(updateBlogPost),
-		'sendEmail': ensureAuthenticated(_sendEmail),
+		//'sendEmail': ensureAuthenticated(_sendEmail),
 		'deleteBlog': ensureAuthenticated(_removePost),
 		'mdBlogCount': function () {
 			if (Roles.userIsInRole(this.userId, _.map(Blog.config('roles'), function (r) { return r;}))) {

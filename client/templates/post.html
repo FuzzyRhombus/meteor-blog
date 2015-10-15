@@ -1,5 +1,6 @@
 <template name="blogPost">
     {{#if blogPostReady}}
+    {{#with post}}
         <section class="blog-post">
             <header>
                 {{#if isInRole 'mdblog-author'}}
@@ -24,6 +25,7 @@
                 {{{content}}}
             </article>
         </section>
+    {{/with}}
     {{else}}
         {{_ "loading"}}
     {{/if}}

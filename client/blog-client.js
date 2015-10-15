@@ -32,6 +32,44 @@ Template.blogList.rendered = function () {
 	});
 };
 
+Template.blogList.created = function () {
+	var self = this;
+	self.serverBlogCount = new ReactiveVar(false);
+	self.autorun(function () {
+		Meteor.call('mdBlogCount', function (err, serverBlogCount) {
+			self.serverBlogCount.set(serverBlogCount);
+		});
+	});
+	self.autorun(function () {
+		self.subscribe('blog.posts');
+	})
+};
+
+Template.blogList.helpers({
+	content: function () {
+		return marked(this.summary);
+	},
+	posts: function () {
+		var sort = Blog.config('sortBy');
+		var year = FlowRouter.getParam('year'),
+			month = FlowRouter.getParam('month');
+		if (!(year || month)) {
+			return BlogPosts.find({}, { sort: sort ? sort : { date: -1 } });
+		}
+		else {
+			var range = getDateRange(year, month);
+			return BlogPosts.find({$or: [
+				{ published: true, published_date: range },
+				{ created_at: range}
+			]}, { sort: sort ? sort : { date: -1 } });
+		}
+	}
+});
+
+Template.blogList.events({
+	'click #mdblog-new': _new
+});
+
 var _setMetadata = function (meta) {
 	if (meta.title) {
 		document.title = meta.title;
@@ -45,26 +83,6 @@ var _setMetadata = function (meta) {
 		$('head').append('<meta property="og:' + key + '" content="' + meta[key] + '">');
 	}
 };
-
-Template.blogList.created = function () {
-	var self = this;
-	self.serverBlogCount = new ReactiveVar(false);
-	this.autorun(function () {
-		Meteor.call('mdBlogCount', function (err, serverBlogCount) {
-			self.serverBlogCount.set(serverBlogCount);
-		});
-	});
-};
-
-Template.blogList.helpers({
-	content: function () {
-		return marked(this.summary);
-	}
-});
-
-Template.blogList.events({
-	'click #mdblog-new': _new
-});
 
 function _new () {
 	if (!Meteor.user()) {
@@ -81,7 +99,7 @@ function _new () {
 	};
 	Meteor.call('insertBlogPost', newBlog, function (err, blog) {
 		if (!err) {
-			Router.go('blogPost', blog);
+			//Router.go('blogPost', blog);
 		}
 		else {
 			console.log('Error upserting blog', err);
@@ -107,6 +125,13 @@ function _getRandomSummary () {
 // ***********************************************************************************************
 // **** Blog Post
 
+Template.blogPost.onCreated(function () {
+	var self = this;
+	self.autorun(function () {
+		self.subscribe('blog.posts');
+	})
+});
+
 Template.blogPost.rendered = function () {
 	if (this.data) {
 		_setMetadata({
@@ -126,8 +151,23 @@ Template.blogPost.events({
 });
 
 Template.blogPost.helpers({
+	post: function () {
+		var slug = FlowRouter.getParam('slug'),
+			idParam = Blog.config('routes.post') || 'slug';
+		var query = {};
+		query[idParam] = slug;
+		if (Blog.config('enableArchive')) {
+			var range = getDateRange(FlowRouter.getParam('year'), FlowRouter.getParam('month'));
+			query['$or'] = [
+				{ published: true, published_date: range },
+				{ created_at: range}
+			];
+		}
+		return BlogPosts.findOne(query);
+	},
 	blogPostReady: function () {
-		return this.content;
+		return true;
+		//return this.content;
 	},
 	content: function () {
 		var $content = $('<p/>', { html: marked(this.content) });
@@ -242,9 +282,9 @@ function _inputPicture (event, template) {
 // ***********************************************************************************************
 // **** Blog Controls
 
-Router.onAfterAction(function () {
-	Session.set('mdblog-modified', false);
-});
+//Router.onAfterAction(function () {
+//	Session.set('mdblog-modified', false);
+//});
 
 Template.blogControls.helpers({
 	modified: function () {
@@ -270,7 +310,7 @@ function _save () {
 	}
 	Meteor.call('updateBlogPost', this, function (err, blog) {
 		if (!err) {
-			Router.go('blogPost', blog);
+			//Router.go('blogPost', blog);
 			Session.set('mdblog-modified', false);
 		}
 	});
@@ -281,9 +321,9 @@ function _publish () {
 	if (userIsSure) {
 		this.published = true;
 		Meteor.call('updateBlogPost', this);
-		if (Blog.config('emailOnPublish')) {
-			Meteor.call('sendEmail', this);
-		}
+		//if (Blog.config('emailOnPublish')) {
+		//	Meteor.call('sendEmail', this);
+		//}
 	}
 }
 
@@ -316,19 +356,19 @@ function _delete () {
 	if (input === TAPi18n.__("confirm_delete_YES")) {
 		Meteor.call('deleteBlog', this, function (e) {
 			if (!e) {
-				Router.go('blogList');
+				//Router.go('blogList');
 			}
 		});
 	}
 }
 
-
-UI.registerHelper('mdBlogDate', function (date) {
+// Global helpers
+Template.registerHelper('mdBlogDate', function (date) {
 	momentLocaleDep.depend();
 	return moment(date).calendar();
 });
 
-UI.registerHelper('mdBlogElementClasses', function (type) {
+Template.registerHelper('mdBlogElementClasses', function (type) {
 	var elementClasses = Blog.config('prettify.element-classes');
 	if (elementClasses) {
 		for (var i = 0; i < elementClasses.length; i++) {
@@ -340,7 +380,7 @@ UI.registerHelper('mdBlogElementClasses', function (type) {
 
 });
 
-UI.registerHelper('authorName', function (userId) {
+Template.registerHelper('authorName', function (userId) {
 	var user = Meteor.users.findOne(userId);
 	if (!user) return 'Unknown';
 	return user.profile.first_name || user.profile.name || 'Unknown';
