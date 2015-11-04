@@ -19,13 +19,12 @@ Package.onUse(function (api) {
 	api.use(['spiderable@1.0.5']);
 	api.use(['reactive-var@1.0.3'], clientServer);
 	api.use(['email@1.0.5']);
+	api.use(['markdown']);
 
 	api.use([
-		//'iron:router@1.0.0',
 		'kadira:flow-router@2.7.0',
 		'kadira:blaze-layout@2.1.0',
 		'arillo:flow-router-helpers@0.4.5',
-		'chuangbo:marked@0.3.5',
 		'momentjs:moment@2.0.0',
 		'alanning:roles@1.2.13',
 		'aldeed:collection2@2.5.0',
@@ -38,7 +37,7 @@ Package.onUse(function (api) {
 	], ['server']);
 
 	api.use([
-		'xolvio:hljs@0.0.1',
+		'simple:highlight.js@1.2.0',
 		'fortawesome:fontawesome@4.2.0_2',
 		'cfs:dropped-event@0.0.10',
 		'ccorcos:clientside-image-manipulation@1.0.3'
@@ -56,8 +55,8 @@ Package.onUse(function (api) {
 
 	// Server
 	api.addFiles([
-		'server/blog-server.js',
-		'server/publish.js'
+		'server/publish.js',
+		'server/blog-server.js'
 	], 'server');
 
 	// Client
@@ -65,10 +64,17 @@ Package.onUse(function (api) {
 		'client/templates/list.html',
 	    'client/templates/post.html',
 		'client/templates/controls.html',
-		'client/blog-client.js',
+		'client/helpers.js',
+		'client/controls.js',
+		'client/post.js',
+		'client/list.js',
 		'client/blog-picture.js',
 		'client/blog-route.js',
 		'client/blog.less'
+	], 'client');
+
+	api.addAssets([
+		'public/blank.png'
 	], 'client');
 
 	// List languages files so Meteor will watch them and rebuild package as they change.

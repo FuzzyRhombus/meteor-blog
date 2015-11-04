@@ -5,34 +5,51 @@
 		var date = new Date(),
 			userId = this.userId;
 
-		var dupes = BlogPosts.find({title: post.title}).count();
-		if (dupes) post.title += '-' + dupes;
+		// Ensure unique title/slug
+		post.title = post.title || TAPi18n.__("new_post_title", null, Blog.config('defaultLocale'));
+		post.slug = getUniqueSlug(post.title);
 
-		post.published = post.published ? post.published : false;
-		post.slug = _getSlug(post.title);
-
-		_.extend(post, {
-			_id: Random.id(),
+		return BlogPosts.insert({
+			title: post.title,
+			slug: post.slug,
+			summary: post.summary || '',
 			created_at: date,
 			updated_at: date,
-			published_date: null,
+			published: false,
+			published_at: null,
 			created_by: userId,
 			updated_by: userId
 		});
-
-		BlogPosts.insert(post);
-		return post;
 	};
 
-	var updateBlogPost = function (post) {
-		var id = post._id,
+	var updateBlogPost = function (update) {
+		var id = update._id,
 			userId = this.userId;
+		var post = BlogPosts.findOne(id);
+		if (!post) throw new Meteor.Error('Could not find post');
+		if (!checkUserRights(userId, post)) throw new Meteor.Error(403);
+
+		// Only update valid fields
+		var titleUpdated = update.title && update.title !== post.title;
+		var fields = ['title', 'summary', 'content'];
+		_.each(fields, function (key) {
+			if (update[key] || !!update[key].length)
+				post[key] = update[key];
+		});
+
+		// Ensure title is still unique and regen slug
+		if (titleUpdated)
+			post.slug = getUniqueSlug(post.title, id);
 
 		post.updated_at = new Date();
 		post.updated_by = userId;
-
-		return BlogPosts.update({_id: id}, { $set: post });
+		if (BlogPosts.update({_id: id}, {$set: post})) return post;
 	};
+
+	function deletePost (post) {
+		if (checkUserRights(this.userId, post._id))
+			BlogPosts.remove(post._id);
+	}
 
 	//function _sendEmail (blog) {
 	//
@@ -57,7 +74,27 @@
 	//	});
 	//}
 
-	function _removePost (blog) { BlogPosts.remove(blog._id); }
+	var toggleBlogPostPublish = function (options) {
+		var id = options._id,
+			userId = this.userId;
+		var post = BlogPosts.findOne(id);
+		if (!post) throw new Meteor.Error('Could not find post');
+		if (!checkUserRights(userId, post)) throw new Meteor.Error(403);
+		post.published = options.publish;
+		if (post.published) {
+			var now = new Date();
+			post.published_at = options.date || now;
+			if (post.published_at < now) post.published_at = now;
+		}
+		BlogPosts.update({_id: id}, {$set: { published: post.published, published_at: post.published_at }});
+		if (publish) {
+			var date = moment(post.published_at);
+			return {
+				year: date.year(),
+				month: ('0' + (date.month()+1)).slice(-2)
+			};
+		}
+	};
 
 	var ensureAuthenticated = function (func) {
 		return function (blog) {
@@ -74,8 +111,8 @@
 	Meteor.methods({
 		'insertBlogPost': ensureAuthenticated(insertBlogPost),
 		'updateBlogPost': ensureAuthenticated(updateBlogPost),
-		//'sendEmail': ensureAuthenticated(_sendEmail),
-		'deleteBlog': ensureAuthenticated(_removePost),
+		'setPostPublished': ensureAuthenticated(toggleBlogPostPublish),
+		'deleteBlogPost': ensureAuthenticated(deletePost),
 		'mdBlogCount': function () {
 			if (Roles.userIsInRole(this.userId, _.map(Blog.config('roles'), function (r) { return r;}))) {
 				return BlogPosts.find().count();
@@ -86,42 +123,38 @@
 		}
 	});
 
-	function _getSlug (title) {
+	function checkUserRights (userId, postId) {
+		var post = _.isObject(postId) ? postId : BlogPosts.findOne(postId);
+		return Roles.userIsInRole(userId, Blog.config('roles.admin')) || post.created_by === userId;
+	}
 
-		var replace = [
-			' ', '#', '%', '"', ':', '/', '?',
-			'^', '`', '[', ']', '{', '}', '<', '>',
-			';', '@', '&', '=', '+', '$', '|', ','
-		];
-
-		var slug = title.toLowerCase();
-		for (var i = 0; i < replace.length; i++) {
-			slug = _replaceAll(replace[i], '-', slug);
+	function getUniqueSlug(title, id) {
+		var slug = getSlug(title);
+		var regex = new RegExp(slug+'(-\\d+)*$', 'im');
+		var dupes = BlogPosts.find({_id: {$ne: id || null}, slug: regex}, {slug: 1}).fetch();
+		if (dupes.length) {
+			var max = _.chain(dupes)
+				.map(function (dupe) { return dupe.slug.match(/\d+$/); })
+				.flatten()
+				.reduce(function (max, next) { return (next > max) ? +next : max; }, 0)
+				.value();
+			slug += '-' + (max+1);
 		}
 		return slug;
 	}
 
-	function _replaceAll (find, replace, str) {
-		return str.replace(new RegExp('\\' + find, 'g'), replace);
+	function getSlug (title) {
+		var replace = ' `~!@#$%^&*()[]{}=+"\':;<>,.\\/?|\t',
+			slug = title.toLocaleLowerCase();
+		return slug.replace(new RegExp(_.reduce(replace, function (m, c) { return m + '\\' + c; }, '[') + ']', 'gi'), '-')
+			.replace(/-+$/, '');
 	}
-
 
 	Meteor.startup(function () {
 		if (!!process.env.AUTO_RESET && process.env.NODE_ENV === 'development') {
 			BlogPosts.remove({});
+			BlogSettings.remove({});
 		}
-		//if (BlogPosts.find().count() === 0) {
-		//	var locale = Meteor.settings.public.blog.defaultLocale;
-		//	_upsertBlogPost({
-		//		published: true,
-		//		archived: false,
-		//		title: TAPi18n.__("blog_post_setup_title", null, locale),
-		//		author: TAPi18n.__("blog_post_setup_author", null, locale),
-		//		date: new Date().getTime(),
-		//		summary: TAPi18n.__("blog_post_setup_summary", null, locale),
-		//		content: TAPi18n.__("blog_post_setup_contents", null, locale)
-		//	});
-		//}
 	});
 
 })();

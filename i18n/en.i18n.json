@@ -1,16 +1,26 @@
 {
-  "new": "New",
   "posted_by": "Posted by ",
+  "edited_by": " by ",
+  "edited_at": "Edited ",
   "read_more": "Read more",
   "waiting_for_posts": "Waiting for blog posts.",
-  "save": " Save",
-  "publish": " Publish",
-  "unpublish": " Unpublish",
   "archive": " Archive",
-  "unarchive": " Unarchive",
-  "picture": "Insert Picture",
-  "delete": " Delete",
   "loading": "Loading...",
+
+  "modified": "This post has been modified since it was last saved. Changes will not appear publicly yet. To persist modifications, click Save",
+  "published": "This post has already been published and can be viewed publicly. Any saved changes will instantly be visible",
+  "scheduled": "This post has been scheduled to publish at the following date/time. It will not be publicly available until then and any changes will not be seen as an edit",
+  "not_published" : "This post is in a draft state and cannot be view publicly. Any changes prior to publishing will not be seen as an edit",
+  "new": "New Post",
+  "save": " Save Changes",
+  "publish": " Publish Post",
+  "schedule": " Schedule Post",
+  "unpublish": " Revert to draft",
+  "picture": "Insert Picture",
+  "delete": " Delete Post",
+  "label_title": "Post title",
+  "label_summary": "Post summary",
+  "label_content": "Article contents",
 
   "confirm_save_published": "This blog entry is already published. Saved changes will be immediately visible to users and search engines.\nClick OK if you are sure.",
   "confirm_publish": "Blog entry will be visible to users or search engines.\nClick OK if you are sure.",
@@ -20,16 +30,7 @@
   "confirm_delete": "Please type YES in capitals if you are sure you want to delete this entry.\nThis action is non-reversible, you should consider archiving instead.",
   "confirm_delete_YES": "YES",
 
-  "blog_post_setup_title": "This Blog is not Setup Yet",
-  "blog_post_setup_author": "John Doe",
-  "blog_post_setup_summary": "If you are the owner of this blog, you need to setup a couple of things before the blog will magically work.",
-  "blog_post_setup_contents": [
-    "Welcome to your blog!",
-    "===",
-    "[Click here to see the documentation](https://github.com/xolvio/md-blog)"
-  ],
-
-  "new_post_title": "Click Anywhere to Edit",
+  "new_post_title": "New Post",
   "new_post_contents": [
     "##**Main Content**",
     "This is a content editable field. Click here to start editing. Full markdown is supported in here.",
@@ -60,7 +61,7 @@
         "\"nextDay\": \"[Tomorrow at] LT\",",
         "\"lastWeek\": \"LL [at] LT\",",
         "\"nextWeek\": \"dddd [at] LT\",",
-        "\"sameElse\": \"on L\"",
+        "\"sameElse\": \"LL [at] LT\"",
       "}",
     "}"
   ]

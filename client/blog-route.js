@@ -1,9 +1,8 @@
 (function () {
 	'use strict';
 
-	FlowRouter.wait();
-
 	// Wait for config to be available, then setup routes
+	FlowRouter.wait();
 	Tracker.autorun(function (c) {
 		if (!Blog.config('routes')) return;
 		setupRoutes({

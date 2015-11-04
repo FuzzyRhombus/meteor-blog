@@ -1,27 +1,31 @@
 <template name="blogControls">
     <section class="blog-controls">
-        {{#if modified}}
-            <button title="Save" id="mdblog-save" class="{{mdBlogElementClasses 'button'}}">
-                <i class="fa fa-floppy-o">{{_ "save"}}</i>
+        <header>
+            {{#if published }}
+                {{#if isScheduled}}{{_ 'scheduled'}}<b>{{formatDate date}}</b>{{else}}{{_ 'published'}}{{/if}}
+            {{else}}
+                {{_ 'not_published'}}
+            {{/if}}
+        </header>
+        <section>
+            <button title="Publish" id="publishPostBtn" class="rydm-btn rydm-publish">
+                {{#if published}}
+                <i class="fa fa-stop"></i>{{_ "unpublish"}}
+                {{else}}
+                <i class="fa fa-play"></i>{{_ "publish"}}
+                {{/if}}
             </button>
-        {{/if}}
+            <button title="Delete" id="deletePostBtn">
+                <i class="fa fa-trash"></i>{{_ 'delete'}}
+            </button>
+        </section>
         {{#unless published}}
-            <button title="Publish" id="mdblog-publish" class="{{mdBlogElementClasses 'button'}}">
-                <i class="fa fa-play"></i>{{_ "publish"}}</button>
+        <footer>
+            <input type="datetime-local" class="sched">
+            <button title="Schedule" id="schedulePostBtn" class="rydm-btn rydm-publish">
+                <i class="fa fa-time"></i>{{_ 'schedule'}}
+            </button>
+        </footer>
         {{/unless}}
-        {{#if published}}
-            <button title="Unpublish" id="mdblog-unpublish" class="{{mdBlogElementClasses
-            'button'}}"><i class="fa fa-stop"></i>{{_ "unpublish"}}</button>
-        {{/if}}
-        {{#unless archived}}
-            <button title="Archive" id="mdblog-archive" class="{{mdBlogElementClasses 'button'}}">
-                <i class="fa fa-eye-slash"></i>{{_ "archive"}}</button>
-        {{/unless}}
-        {{#if archived}}
-            <button title="Unarchive" id="mdblog-unarchive" class="{{mdBlogElementClasses 'button'}}">
-                <i class="fa fa-eye"></i>{{_ "unarchive"}}</button>
-        {{/if}}
-        <button title="Delete" id="mdblog-delete" class="{{mdBlogElementClasses 'button'}}">
-            <i class="fa fa-trash"></i>{{_ "delete"}}</button>
     </section>
 </template>
