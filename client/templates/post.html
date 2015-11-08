@@ -26,13 +26,6 @@
                     {{_ "posted_by"}}<span class="author">{{authorName created_by}}</span>
                     <time>{{formatDate date}}</time>
                 </div>
-                {{#if allowPictureUpload}}
-                    <br />
-                    <button title="Picture" id="mdblog-picture">
-                        <i class="fa fa-image"></i> {{_ "picture"}}
-                    </button>
-                    <input type="file" id="mdblog-file-input" style="display:none;" accept="image/*" multiple />
-                {{/if}}
             </header>
             {{#if authorLoggedIn}}
             <label for="content">{{_ 'label_content'}}</label>

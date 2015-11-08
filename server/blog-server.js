@@ -1,5 +1,9 @@
 (function () {
 	'use strict';
+	var fs = Npm.require('fs'),
+		path = Npm.require('path'),
+		mkdirp = Npm.require('mkdirp'),
+		url = Npm.require('url');
 
 	var insertBlogPost = function (post) {
 		var date = new Date(),
@@ -108,11 +112,34 @@
 		}
 	};
 
+	function uploadPicture (file) {
+		// Validate it is is an image
+		var config = Blog.config('pictures');
+		if (!config.storage) throw new Error('Local storage is disabled');
+		var types = mime2ext(file.type);
+		if (!types.length) throw new Meteor.Error('invalid type');
+		var buffer = EJSON.fromJSONValue(file.buffer);
+		if (file.size !== buffer.length) throw new Meteor.Error('invalid size');
+		// Ensure within max sizes, resize if necessary
+		if (file.size > config.maxSize || file.width > config.maxWidth || file.height > config.maxHeight)
+			throw new Meteor.Error('image is too large');
+
+		var name = Random.id().toLowerCase(),
+		    type = types[0],
+			filename = name + '.' + type,
+			savePath = path.join(process.env.PWD || process.cwd(), Blog.config('server.localImagePath'), filename);
+		fs.writeFileSync(savePath, new Buffer(buffer), 'binary');
+
+		var routes = Blog.config('routes');
+		return path.join('/', routes.base, routes.pictures, filename);
+	}
+
 	Meteor.methods({
 		'insertBlogPost': ensureAuthenticated(insertBlogPost),
 		'updateBlogPost': ensureAuthenticated(updateBlogPost),
 		'setPostPublished': ensureAuthenticated(toggleBlogPostPublish),
 		'deleteBlogPost': ensureAuthenticated(deletePost),
+		'uploadBlogPicture': ensureAuthenticated(uploadPicture),
 		'mdBlogCount': function () {
 			if (Roles.userIsInRole(this.userId, _.map(Blog.config('roles'), function (r) { return r;}))) {
 				return BlogPosts.find().count();
@@ -150,10 +177,48 @@
 			.replace(/-+$/, '');
 	}
 
+	function getPicture (req, res) {
+		if (!Blog.config('pictures.storage')) return;
+		var name = req.url.replace(/\/|\\|\.{1,2}\//ig, '').toLowerCase(),
+			ext = path.extname(name).replace('.', ''),
+			mimes = ext2mime(ext);
+		// if not GET or can't find valid file, 404
+		if (req.method.toUpperCase() !== 'GET' || !(name.length && ext && mimes.length)) return errorResponse(res);
+		var filename = path.join(process.env.PWD || process.cwd(), Blog.config('server.localImagePath'), name);
+		fs.stat(filename, function (err, stat) {
+			if (!err && stat.isFile()) {
+				res.writeHead(200, {
+					'Content-Type': _.isArray(mimes) ? mimes[0] : mimes,
+					'Content-Disposition': 'inline;filename='+name
+				});
+				var stream = fs.createReadStream(filename);
+				return stream.pipe(res);
+			}
+			errorResponse(res);
+		});
+	}
+
+	function errorResponse (res) {
+		res.statusCode = 404;
+		res.end();
+	}
+
 	Meteor.startup(function () {
 		if (!!process.env.AUTO_RESET && process.env.NODE_ENV === 'development') {
 			BlogPosts.remove({});
 			BlogSettings.remove({});
+		}
+
+		if (Blog.config('pictures.storage')) {
+			var imgPath = path.join(process.env.PWD || process.cwd(), Blog.config('server.localImagePath'));
+			if (!fs.existsSync(imgPath)) mkdirp.sync(imgPath);
+
+			var routes = Blog.config('routes');
+			if (routes) {
+				var route = path.join('/', routes.base, routes.pictures);
+				RoutePolicy.declare(route, 'network');
+				WebApp.connectHandlers.use(route, getPicture);
+			}
 		}
 	});
 

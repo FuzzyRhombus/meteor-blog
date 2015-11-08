@@ -21,7 +21,7 @@ Template.blogPost.onCreated(function () {
 	self.autorun(function () {
 		var query = buildPostQuery();
 		self.subscribe('blog.posts', query);
-	})
+	});
 });
 
 Template.blogPost.onRendered(function () {
@@ -46,12 +46,11 @@ Template.blogPost.events({
 	'keyup [contenteditable]': function update (ev) {
 		ev.preventDefault();
 		ev.stopPropagation();
+		var element = ev.currentTarget;
 		if (ev.keyCode == 27) {
 			$(element).blur();
 			return;
 		}
-		var element = ev.currentTarget;
-		$('#mdblog-publish').show();
 		this[element.id] = element.innerText;
 		if (element.id === 'content') mdContentDep.changed();
 		modifiedDep.changed();
@@ -67,9 +66,18 @@ Template.blogPost.events({
 			$el.hide();
 		}
 	},
-	//'dropped #content': _droppedPicture,
-	//'click #mdblog-picture': _choosePicture,
-	//'change #mdblog-file-input': _inputPicture
+	'dropped #content': insertImage( function (err, url) {
+		if (!err && url) {
+			var el = $('#content')[0];
+			var matches = this.content.replace(/\<br\/{0,1}\>/ig, '\n').match(/^\[img\d+\]:.*$/gim);
+			var tag = '<br/>[img' + (+(matches && matches.length) + 1) + ']: ' + url;
+			this.content += tag;
+			el.innerHTML += tag;
+			el.focus();
+			mdContentDep.changed();
+			modifiedDep.changed();
+		}
+	}),
 	'click button#saveBtn': function save () {
 		if (this.published) {
 			var userIsSure = confirm(TAPi18n.__("confirm_save_published"));
@@ -118,23 +126,5 @@ Template.blogPost.helpers({
 	modified: function () {
 		modifiedDep.depend();
 		return draft && _.some(['title', 'content', 'summary'], function (key) { return draft[key] !== this[key]; }, this);
-	},
-	allowPictureUpload: function () {
-		return UI._globalHelpers.isInRole('mdblog-author') && _allowPictureUpload();
 	}
 });
-
-// **** File Upload
-
-function _droppedPicture (event, template) {
-	if (_allowPictureUpload()) {
-		_insertPictures(template.data, event.originalEvent.dataTransfer.files);
-	}
-}
-
-function _choosePicture () {
-	$('#mdblog-file-input').click();
-}
-function _inputPicture (event, template) {
-	_insertPictures(template.data, event.target.files);
-}

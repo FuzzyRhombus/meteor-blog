@@ -7,7 +7,8 @@ Package.describe({
 });
 
 Npm.depends({
-	flat: '1.6.0'
+	flat: '1.6.0',
+	mkdirp: '0.5.1'
 });
 
 Package.onUse(function (api) {
@@ -20,6 +21,7 @@ Package.onUse(function (api) {
 	api.use(['reactive-var@1.0.3'], clientServer);
 	api.use(['email@1.0.5']);
 	api.use(['markdown']);
+	api.use(['routepolicy']);
 
 	api.use([
 		'kadira:flow-router@2.7.0',
@@ -66,9 +68,9 @@ Package.onUse(function (api) {
 		'client/templates/controls.html',
 		'client/helpers.js',
 		'client/controls.js',
+		'client/image-upload.js',
 		'client/post.js',
 		'client/list.js',
-		'client/blog-picture.js',
 		'client/blog-route.js',
 		'client/blog.less'
 	], 'client');
