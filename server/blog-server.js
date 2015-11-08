@@ -55,29 +55,6 @@
 			BlogPosts.remove(post._id);
 	}
 
-	//function _sendEmail (blog) {
-	//
-	//	var addresses = Meteor.users.find(
-	//		{ 'emails.address': { $ne: '' } }).map(
-	//		function (doc) { return doc.emails[0].address });
-	//
-	//	console.info("Sending email for '" + blog.title + "' to "
-	//	             + addresses.length + ' recipient(s):', addresses);
-	//
-	//	var sender = Meteor.user().emails[0].address;
-	//	Email.send({
-	//		to: sender,
-	//		bcc: addresses,
-	//		from: sender,
-	//		subject: blog.title,
-	//		html: SSR.render('publishEmail', {
-	//			summary: blog.summary,
-	//			url: getBlogPostUrl(blog),
-	//			read_more: TAPi18n.__('read_more', {}, Blog.config('defaultLocale'))
-	//		})
-	//	});
-	//}
-
 	var toggleBlogPostPublish = function (options) {
 		var id = options._id,
 			userId = this.userId;

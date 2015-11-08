@@ -34,9 +34,8 @@ Package.onUse(function (api) {
 		'edgee:slingshot@0.4.1'
 	], clientServer);
 
-	api.use([
-		'meteorhacks:ssr@2.1.1'
-	], ['server']);
+	//api.use([
+	//], ['server']);
 
 	api.use([
 		'simple:highlight.js@1.2.0',
