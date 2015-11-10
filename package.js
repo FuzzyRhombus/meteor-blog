@@ -31,7 +31,8 @@ Package.onUse(function (api) {
 		'alanning:roles@1.2.13',
 		'aldeed:collection2@2.5.0',
 		'tap:i18n@1.3.1',
-		'edgee:slingshot@0.4.1'
+		'edgee:slingshot@0.4.1',
+		'infinitedg:winston@0.7.3'
 	], clientServer);
 
 	//api.use([
@@ -51,11 +52,12 @@ Package.onUse(function (api) {
 		'lib/blog.js',
 		'lib/schema.js',
 		'lib/blog-paths.js',
-		'package-tap.i18n'  // package-tap.i18n must be loaded before the templates
+		'package-tap.i18n'  // package-tap.i18n must be loaded before the templates,
 	], clientServer);
 
 	// Server
 	api.addFiles([
+		'server/log.js',
 		'server/publish.js',
 		'server/blog-server.js'
 	], 'server');

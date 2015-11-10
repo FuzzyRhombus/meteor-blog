@@ -5,14 +5,14 @@
 		mkdirp = Npm.require('mkdirp'),
 		url = Npm.require('url');
 
-	var insertBlogPost = function (post) {
+	function createBlogPost (post) {
 		var date = new Date(),
 			userId = this.userId;
 
 		// Ensure unique title/slug
 		post.title = post.title || TAPi18n.__("new_post_title", null, Blog.config('defaultLocale'));
 		post.slug = getUniqueSlug(post.title);
-
+		logger.log('verbose', 'Creating new blog post...', post);
 		return BlogPosts.insert({
 			title: post.title,
 			slug: post.slug,
@@ -24,9 +24,9 @@
 			created_by: userId,
 			updated_by: userId
 		});
-	};
+	}
 
-	var updateBlogPost = function (update) {
+	function updateBlogPost (update) {
 		var id = update._id,
 			userId = this.userId;
 		var post = BlogPosts.findOne(id);
@@ -47,15 +47,16 @@
 
 		post.updated_at = new Date();
 		post.updated_by = userId;
+		logger.log('verbose', 'Updating blog post', post);
 		if (BlogPosts.update({_id: id}, {$set: post})) return post;
-	};
+	}
 
 	function deletePost (post) {
 		if (checkUserRights(this.userId, post._id))
 			BlogPosts.remove(post._id);
 	}
 
-	var toggleBlogPostPublish = function (options) {
+	function toggleBlogPostPublish (options) {
 		var id = options._id,
 			userId = this.userId;
 		var post = BlogPosts.findOne(id);
@@ -67,6 +68,7 @@
 			post.published_at = options.date || now;
 			if (post.published_at < now) post.published_at = now;
 		}
+		logger.log('verbose', 'Publishing blog post', post);
 		BlogPosts.update({_id: id}, {$set: { published: post.published, published_at: post.published_at }});
 		if (publish) {
 			var date = moment(post.published_at);
@@ -78,12 +80,13 @@
 	};
 
 	var ensureAuthenticated = function (func) {
-		return function (blog) {
+		return function (params) {
 			var userId = this.userId;
 			if (!!userId && Roles.userIsInRole(userId, _.map(Blog.config('roles'), function (r) { return r;}))) {
-				return func.call(this, blog);
+				return func.call(this, params);
 			}
 			else {
+				log.error('Insufficient auth requested for method', { fn: func, user: userId });
 				throw new Meteor.Error(403, "Not authorized");
 			}
 		}
@@ -112,7 +115,7 @@
 	}
 
 	Meteor.methods({
-		'insertBlogPost': ensureAuthenticated(insertBlogPost),
+		'insertBlogPost': ensureAuthenticated(createBlogPost),
 		'updateBlogPost': ensureAuthenticated(updateBlogPost),
 		'setPostPublished': ensureAuthenticated(toggleBlogPostPublish),
 		'deleteBlogPost': ensureAuthenticated(deletePost),
@@ -162,6 +165,7 @@
 		// if not GET or can't find valid file, 404
 		if (req.method.toUpperCase() !== 'GET' || !(name.length && ext && mimes.length)) return errorResponse(res);
 		var filename = path.join(process.env.PWD || process.cwd(), Blog.config('server.localImagePath'), name);
+		logger.log('verbose', 'Request for blog image', {url: req.url, filename: filename});
 		fs.stat(filename, function (err, stat) {
 			if (!err && stat.isFile()) {
 				res.writeHead(200, {
@@ -181,18 +185,21 @@
 	}
 
 	Meteor.startup(function () {
+		logger.info('Initializing blog');
 		if (!!process.env.AUTO_RESET && process.env.NODE_ENV === 'development') {
+			logger.log('warn', 'Resetting blog posts and settings');
 			BlogPosts.remove({});
 			BlogSettings.remove({});
 		}
 
 		if (Blog.config('pictures.storage')) {
 			var imgPath = path.join(process.env.PWD || process.cwd(), Blog.config('server.localImagePath'));
-			if (!fs.existsSync(imgPath)) mkdirp.sync(imgPath);
+			if (!fs.existsSync(imgPath)) logger.info('Created directory '+imgPath, mkdirp.sync(imgPath));
 
 			var routes = Blog.config('routes');
 			if (routes) {
 				var route = path.join('/', routes.base, routes.pictures);
+				logger.info('Setting route (' + route + ') for static blog images');
 				RoutePolicy.declare(route, 'network');
 				WebApp.connectHandlers.use(route, getPicture);
 			}
