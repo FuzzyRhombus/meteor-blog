@@ -56,8 +56,7 @@ initRss = function () {
 	var rssLimit = Blog.config('rss.limit');
 	if (rssLimit) {
 		BlogPosts.find({
-				published: true,
-				published_at: { $lte: new Date() }
+				published: true
 			},
 			{
 				sort: { published_at: -1 },

@@ -37,8 +37,9 @@ Package.onUse(function (api) {
 		'infinitedg:winston@0.7.3'
 	], clientServer);
 
-	//api.use([
-	//], ['server']);
+	api.use([
+		'percolate:synced-cron@1.3.0'
+	], ['server']);
 
 	api.use([
 		'simple:highlight.js@1.2.0',
@@ -61,6 +62,7 @@ Package.onUse(function (api) {
 	api.addFiles([
 		'server/log.js',
 		'server/publish.js',
+		'server/schedule.js',
 		'server/rss.js',
 		'server/image.js',
 		'server/admin.js',

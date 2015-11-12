@@ -1,11 +1,15 @@
 <template name="blogControls">
     <section class="blog-controls">
         <header>
-            {{#if published }}
-                {{#if isScheduled}}{{_ 'scheduled'}}<b>{{formatDate date}}</b>{{else}}{{_ 'published'}}{{/if}}
+            {{#unless isScheduled}}
+                {{#if published}}
+                    {{_ 'published'}}
+                {{else}}
+                    {{_ 'not_published'}}
+                {{/if}}
             {{else}}
-                {{_ 'not_published'}}
-            {{/if}}
+                {{_ 'scheduled'}}<b>{{formatDate published_at}}</b>
+            {{/unless}}
         </header>
         <section>
             <button title="Publish" id="publishPostBtn" class="rydm-btn rydm-publish">

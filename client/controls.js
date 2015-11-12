@@ -2,7 +2,7 @@ var scheduleDate;
 
 Template.blogControls.helpers({
 	isScheduled: function () {
-		return this.published && this.published_at > new Date();
+		return !this.published && this.published_at > new Date();
 	},
 	scheduleDate: function () {
 		return Session.get('post-schedule-date');
@@ -14,7 +14,6 @@ Template.blogControls.events({
 		var publish = !this.published;
 		if (!confirm(TAPi18n.__('confirm_'+(publish ? 'publish' : 'unpublish')))) return;
 		var date = publish && event.currentTarget.id === 'schedulePostBtn' && scheduleDate;
-		debugger;
 		Meteor.call('setPostPublished', {_id:this._id, publish: publish, date: date}, function (err, date) {
 			if (!err && date && FlowRouter.current().route.name !== 'blogBase') {
 				if (FlowRouter.getParam('month') !== date.month || FlowRouter.getParam('year') !== date.year)

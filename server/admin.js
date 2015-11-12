@@ -60,10 +60,12 @@ toggleBlogPostPublish = function toggleBlogPostPublish (options) {
 		var now = new Date();
 		post.published_at = options.date || now;
 		if (post.published_at < now) post.published_at = now;
+		if (post.published_at > now) post.published = false;
 	}
 	logger.log('verbose', 'Publishing blog post', post);
 	BlogPosts.update({_id: id}, {$set: { published: post.published, published_at: post.published_at }});
-	if (publish) {
+	if (post.published_at > now) schedulePost(post);
+	if (options.publish) {
 		var date = moment(post.published_at);
 		return {
 			year: date.year(),

@@ -13,7 +13,7 @@ Meteor.publish('blog.posts', function (params) {
 		];
 	} else {
 		return [
-			BlogPosts.find(_.extend({published: true, published_at: {$lte: new Date()}}, params)),
+			BlogPosts.find(_.extend({published: true}, params)),
 			Meteor.users.find({
 				roles: { $in: authRoles }
 			}, { fields: {
