@@ -6,9 +6,9 @@
 	Tracker.autorun(function (c) {
 		if (!Blog.config('routes')) return;
 		setupRoutes({
-			base: getBlogBasePath(),
-			archives: Blog.config('enableArchive') ? getBlogArchivePaths() : false,
-			post: getBlogPostPath()
+			base: blogPaths.base,
+			archives: Blog.config('enableArchive') ? blogPaths.archive : false,
+			post: blogPaths.post
 		});
 		FlowRouter.initialize();
 		c.stop();

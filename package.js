@@ -8,7 +8,9 @@ Package.describe({
 
 Npm.depends({
 	flat: '1.6.0',
-	mkdirp: '0.5.1'
+	mkdirp: '0.5.1',
+	rss: '1.2.0',
+	'remove-markdown': '0.0.6'
 });
 
 Package.onUse(function (api) {
@@ -59,6 +61,9 @@ Package.onUse(function (api) {
 	api.addFiles([
 		'server/log.js',
 		'server/publish.js',
+		'server/rss.js',
+		'server/image.js',
+		'server/admin.js',
 		'server/blog-server.js'
 	], 'server');
 

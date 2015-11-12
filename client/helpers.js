@@ -25,12 +25,7 @@ Template.registerHelper('formatDate', function (date) {
 	return moment(date).calendar();
 });
 
-Template.registerHelper('authorName', function (userId) {
-	var user = Meteor.users.findOne(userId);
-	if (!user) return 'Unknown';
-	var name = user.profile.first_name + ' ' + user.profile.last_name;
-	return (user.profile.display_name || name || user.profile.name || 'Unknown').trim();
-});
+Template.registerHelper('authorName', getAuthorName);
 
 Template.registerHelper('isEdited', function () {
 	return this.published && this.updated_at && this.updated_at > this.date;
