@@ -98,8 +98,7 @@ Package.onUse(function (api) {
 	// otherwise the templates won't have the i18n capabilities (unless
 	// you'll register them with tap-i18n yourself).
 	api.addFiles([
-		"i18n/en.i18n.json",
-		"i18n/fr.i18n.json"
+		"i18n/en.i18n.json"
 	], clientServer);
 
 	api.imply('kadira:flow-router');
