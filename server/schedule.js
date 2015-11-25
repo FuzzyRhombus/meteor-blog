@@ -3,6 +3,7 @@ schedulePost = function (post) {
 
 	var jobName = 'post_'+post._id;
 	if (SyncedCron.nextScheduledAtDate(jobName)) SyncedCron.remove(jobName);
+	logger.log('verbose', 'Scheduling blog post', post);
 	SyncedCron.add({
 		name: jobName,
 		schedule: function (parser) {
@@ -12,6 +13,14 @@ schedulePost = function (post) {
 			BlogPosts.update({_id: post._id}, {$set: {published:true}});
 		}
 	});
+};
+
+unschedulePost = function (post) {
+	var jobName = 'post_'+post._id;
+	if (SyncedCron.nextScheduledAtDate(jobName)) {
+		logger.log('verbose', 'Unscheduling blog post', post);
+		SyncedCron.remove(jobName);
+	}
 };
 
 Meteor.startup(function () {

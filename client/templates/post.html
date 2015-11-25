@@ -1,51 +1,32 @@
-<template name="blogPost">
+<template name="blogPostWrapper">
     {{#if Template.subscriptionsReady}}
     {{#with post}}
-        <section class="blog-post">
-            <header>
-                {{#if authorLoggedIn}}
-                    {{> blogControls  this}}
-                    {{#if modified}}
-                    <section>
-                        <div>{{_ 'modified'}}</div>
-                        <button title="Save" id="saveBtn">
-                            <i class="fa fa-floppy-o">{{_ 'save'}}</i>
-                        </button>
-                    </section>
-                    {{/if}}
-                {{/if}}
-                {{#if authorLoggedIn}}<label for="title">{{_ 'label_title'}}</label>{{/if}}
-                <h1 id="title" {{contenteditable}}>{{{title}}}</h1>
-                {{#if blogConfig 'showSummary'}}
-                {{#if authorLoggedIn}}
-                <label for="summary">{{_ 'label_summary'}}</label>
-                <h3 id="summary" {{contenteditable}}>{{summary}}</h3>
-                {{/if}}
-                {{/if}}
-                <div class="info">
-                    {{_ "posted_by"}}<span class="author">{{authorName created_by}}</span>
-                    <time>{{formatDate date}}</time>
-                </div>
-            </header>
-            {{#if authorLoggedIn}}
-            <label for="content">{{_ 'label_content'}}</label>
-            <article id="content" {{contenteditable}} data-markdown="true" style="float:left;width:49%;display:none;">
-                <!--{{{content}}}-->
-            </article>
-            {{/if}}
-            <article id="md-content">
-                {{#markdown}}{{content}}{{/markdown}}
-            </article>
-            <footer>
-                {{#if isEdited}}
-                    <span class="info">
-                        {{_ "edited_at"}}<time>{{formatDate updated_at}}</time>{{_ "edited_by"}}<span class="author">{{authorName updated_by}}</span>
-                    </span>
-                {{/if}}
-            </footer>
-        </section>
+    {{#if authorLoggedIn}}
+    <header>
+        {{> blogControls this}}
+    </header>
+    {{/if}}
+    <section class="blog-post">
+        {{> Template.dynamic template=postTemplate data=this}}
+    </section>
     {{/with}}
     {{else}}
-        LOADING
+    <div class="progress">
+        <div class="indeterminate"></div>
+    </div>
     {{/if}}
+</template>
+
+<template name="blogPostDefault">
+    <header>
+        {{> blogPostTitle}}
+        {{> blogPostInfo}}
+        {{> blogPostSummary}}
+    </header>
+    <section>
+        {{> blogPostContent}}
+    </section>
+    <footer>
+        {{> blogPostEdited}}
+    </footer>
 </template>

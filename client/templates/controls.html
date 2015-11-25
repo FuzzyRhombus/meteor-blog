@@ -1,35 +1,87 @@
 <template name="blogControls">
-    <section class="blog-controls">
-        <header>
+    <section class="blog-controls {{showControls}}">
+        <header class="white-text {{noticeColor}} auth-notice z-depth-1">
             {{#unless isScheduled}}
                 {{#if published}}
-                    {{_ 'published'}}
+                    <i class="material-icons btn-icon">warning</i>{{_ 'published'}}
                 {{else}}
-                    {{_ 'not_published'}}
+                    <i class="material-icons btn-icon">info_outline</i>{{_ 'not_published'}}
                 {{/if}}
             {{else}}
-                {{_ 'scheduled'}}<b>{{formatDate published_at}}</b>
+                    <i class="material-icons btn-icon">schedule</i>{{{_ 'scheduled' (prettifyDate published_at)}}}
+                    <a href="" id="cancelScheduleBtn" class="btn-flat rydm-btn tooltipped white-text rydm-publish"
+                        data-position="left" data-tooltip="{{_ 'cancel'}}">
+                        <i class="material-icons btn-icon">close</i>
+                    </a>
             {{/unless}}
         </header>
-        <section>
-            <button title="Publish" id="publishPostBtn" class="rydm-btn rydm-publish">
-                {{#if published}}
-                <i class="fa fa-stop"></i>{{_ "unpublish"}}
-                {{else}}
-                <i class="fa fa-play"></i>{{_ "publish"}}
-                {{/if}}
-            </button>
-            <button title="Delete" id="deletePostBtn">
-                <i class="fa fa-trash"></i>{{_ 'delete'}}
-            </button>
+        <section class="white-text red auth-notice z-depth1 {{modifiedClass}}" >
+            <i class="material-icons btn-icon">warning</i>{{_ 'modified'}}
+            <a href="" title="{{_ 'save'}}" id="saveBtn" class="btn-flat rydm-btn white-text tooltipped"
+               data-position="left" data-tooltip="{{_ 'save'}}">
+                <i class="material-icons btn-icon">save</i>
+            </a>
         </section>
-        {{#unless published}}
         <footer>
-            <input type="datetime-local" class="sched">
-            <button title="Schedule" id="schedulePostBtn" class="rydm-btn rydm-publish">
-                <i class="fa fa-time"></i>{{_ 'schedule'}}
+            <a href="#publishModal{{_id}}" title="Publish" id="publishPostBtn" class="btn rydm-btn waves-effect waves-light blue modal-trigger">
+                {{#if published}}
+                <i class="material-icons btn-icon">mode_edit</i>{{_ 'unpublish'}}
+                {{else}}
+                <i class="material-icons btn-icon">publish</i>{{_ 'publish'}}
+                {{/if}}
+            </a>
+            {{#unless published}}
+            <label>or Schedule</label>
+            <input type="datetime-local" class="schedule" />
+            <button id="schedulePostBtn" class="btn rydm-btn waves-effect waves-light blue rydm-publish {{scheduleDateValid}}" {{scheduleDateValid}}>
+                <i class="material-icons btn-icon">schedule</i>{{_ 'schedule'}}
             </button>
+            {{/unless}}
+            <a href="#deleteModal{{_id}}" id="deletePostBtn" class="btn-floating tooltipped right waves-effect waves-light red tooltipped modal-trigger"
+               data-position="left" data-tooltip="{{_ 'delete'}}" style="position:absolute;top:0;right:0;margin-right:0.3rem;">
+                <i class="material-icons">delete</i>
+            </a>
         </footer>
-        {{/unless}}
     </section>
+    <a href="" id="showControls" class="btn-floating rydm-btn right waves-effect waves-light orange">
+        {{#if showControls}}
+        <i class="material-icons btn-icon">mode_edit</i>
+        {{else}}
+        <i class="material-icons btn-icon">expand_more</i>
+        {{/if}}
+    </a>
+
+    <section id="deleteModal{{_id}}" class="modal">
+        <div class="modal-content">
+            <h5><i class="material-icons left top large orange-text">warning</i>{{_ 'confirm_delete' (title)}}</h5>
+        </div>
+        <div class="modal-footer">
+            <a href="" class="modal-action modal-close btn-flat waves-effect left rydm-vcenter"><i class="material-icons btn-icon">cancel</i> {{_ 'cancel'}}</a>
+            <a href="" id="deleteConfirmBtn" class="modal-action waves-effect btn-flat rydm-vcenter"><i class="material-icons btn-icon">delete</i>{{_ 'delete'}}</a>
+        </div>
+    </section>
+
+    <section id="publishModal{{_id}}" class="modal">
+        <div class="modal-content">
+            <h5>
+                <i class="material-icons left top large orange-text">warning</i>
+                {{#if published}}
+                    {{_ 'confirm_unpublish'}}
+                {{else}}
+                    {{_ 'confirm_publish'}}
+                {{/if}}
+            </h5>
+        </div>
+        <div class="modal-footer">
+            <a href="" class="modal-action modal-close btn-flat waves-effect left rydm-vcenter"><i class="material-icons btn-icon">cancel</i> {{_ 'cancel'}}</a>
+            <a href="" id="publishConfirmBtn" class="modal-action modal-close waves-effect btn-flat rydm-vcenter rydm-publish">
+                {{#if published}}
+                <i class="material-icons btn-icon">mode_edit</i>{{_ 'unpublish'}}
+                {{else}}
+                <i class="material-icons btn-icon">publish</i>{{_ 'publish'}}
+                {{/if}}
+            </a>
+        </div>
+    </section>
+
 </template>

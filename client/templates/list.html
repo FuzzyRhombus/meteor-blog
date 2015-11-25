@@ -1,42 +1,43 @@
+<template name="blogListPostDefault">
+    <header>
+        {{> blogPostTitle}}
+        {{> blogPostInfo}}
+    </header>
+    <summary>
+        {{#if blogConfig 'showSummary'}}
+            {{> blogPostSummary}}
+        {{else}}
+            {{> blogPostContent}}
+        {{/if}}
+        <a href="{{pathFor 'blogPost' slug=slug year=year month=month}}" class="btn-flat rydm-btn">
+            <i class="material-icons btn-icon">more_horiz</i>
+            {{_ "read_more"}}
+        </a>
+    </summary>
+    <footer>
+        {{> blogPostEdited}}
+    </footer>
+</template>
+
 <template name="blogList">
     <section class="blog-list">
         {{#if authorLoggedIn}}
-            <section class="blog-controls">
-                <button title="New" id="newBlogPostBtn">
-                    <i class="fa fa-pencil-square-o"></i>{{_ "new"}}</button>
-            </section>
+            <a href="" title="{{_ "new"}}" id="newBlogPostBtn" class="btn-floating left btn-large waves-effect waves-light orange tooltipped"
+            data-position="right" data-tooltip="{{_ "new"}}">
+                <i class="material-icons">add</i>
+            </a>
         {{/if}}
         {{#each posts}}
             <section class="blog-post">
                 {{#if authorLoggedIn}}
                     {{> blogControls }}
                 {{/if}}
-                <header>
-                    <h2><a href="{{pathFor 'blogPost' slug=slug year=year month=month}}">{{title}}</a></h2>
-                    <span class="info">
-                        {{_ "posted_by"}}<span class="author">{{authorName created_by}}</span>
-                        <time>{{formatDate date}}</time>
-                    </span>
-                </header>
-                <summary>
-                {{#if blogConfig 'showSummary'}}
-                    {{summary}}
-                {{else}}
-                    <span style="text-overflow:ellipsis;">{{#markdown}}{{content}}{{/markdown}}</span>
-                {{/if}}
-                    <a href="{{pathFor 'blogPost' slug=slug year=year month=month}}">{{_ "read_more"}}
-                    <i class="fa fa-long-arrow-right"></i></a>
-                </summary>
-                <footer>
-                    {{#if isEdited}}
-                        <span class="info">
-                            {{_ "edited_at"}}<time>{{formatDate updated_at}}</time>{{_ "edited_by"}}<span class="author">{{authorName updated_by}}</span>
-                        </span>
-                    {{/if}}
-                </footer>
+                {{> Template.dynamic template=postTemplate data=this}}
             </section>
         {{else}}
-            {{_ "waiting_for_posts"}}
+        <div class="progress">
+            <div class="indeterminate"></div>
+        </div>
         {{/each}}
     </section>
 </template>

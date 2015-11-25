@@ -1,7 +1,6 @@
 var momentLocaleDep = new Tracker.Dependency();
 
 Meteor.startup(function () {
-
 	Tracker.autorun(function () {
 		var locale = Session.get('locale') || Blog.config('defaultLocale');
 		if (locale) {
@@ -20,15 +19,25 @@ Meteor.startup(function () {
 	});
 });
 
-Template.registerHelper('formatDate', function (date) {
-	momentLocaleDep.depend();
-	return moment(date).calendar();
+Blaze.TemplateInstance.prototype.findParent = function (templateName) {
+	var view = this.view,
+		regex = new RegExp(templateName+'$');
+	while (view && view.name) {
+		if (regex.test(view.name)) {
+			return view.templateInstance && view.templateInstance();
+		}
+		view = view.parentView;
+	}
+	return null;
+};
+
+Template.registerHelper('isChildOf', function (parent) {
+	return parent && !!Template.instance().findParent(parent);
 });
 
-Template.registerHelper('authorName', getAuthorName);
-
-Template.registerHelper('isEdited', function () {
-	return this.published && this.updated_at && this.updated_at > this.date;
+Template.registerHelper('prettifyDate', function (date) {
+	momentLocaleDep.depend();
+	return moment(date).calendar();
 });
 
 Template.registerHelper('authorLoggedIn', function () {
@@ -36,6 +45,19 @@ Template.registerHelper('authorLoggedIn', function () {
 	if (!user) return false;
 	var roles = Blog.config('roles');
 	return Roles.userIsInRole(user, roles.admin) || (Roles.userIsInRole(user, roles.author) && (!this.created_by || user._id === this.created_by));
+});
+
+Template.registerHelper('blogPathFor', function (path) {
+	switch (path) {
+		case 'base':
+			return blogPaths.base;
+		default:
+		case 'post':
+			var post = this;
+			if (!post) return '';
+			if (!post._id && _.isString(post)) post = BlogPosts.findOne(post);
+			return '/'+blogPaths.getPathForPost(post);
+	}
 });
 
 setHtmlMeta = function (data) {
@@ -52,4 +74,9 @@ setHtmlMeta = function (data) {
 		$('meta[property="og:' + key + '"]').remove();
 		$('head').append('<meta property="og:' + key + '" content="' + val + '">');
 	});
+};
+
+getPostParamId = function (param, post) {
+	var id = this._id || post._id || post;
+	return 'blog-' + id + '.' + param;
 };

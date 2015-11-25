@@ -24,8 +24,7 @@ updateBlogPost = function updateBlogPost (update) {
 		userId = this.userId;
 	var post = BlogPosts.findOne(id);
 	if (!post) throw new Meteor.Error('Could not find post');
-	if (!checkUserRights(userId, post)) throw new Meteor.Error(403);
-
+	checkUserRights(userId, post);
 	// Only update valid fields
 	var titleUpdated = update.title && update.title !== post.title;
 	var fields = ['title', 'summary', 'content'];
@@ -45,8 +44,9 @@ updateBlogPost = function updateBlogPost (update) {
 };
 
 deletePost = function deletePost (post) {
-	if (checkUserRights(this.userId, post._id))
-		BlogPosts.remove(post._id);
+	checkUserRights(this.userId, post._id);
+	unschedulePost(post);
+	BlogPosts.remove(post._id);
 };
 
 toggleBlogPostPublish = function toggleBlogPostPublish (options) {
@@ -54,19 +54,23 @@ toggleBlogPostPublish = function toggleBlogPostPublish (options) {
 		userId = this.userId;
 	var post = BlogPosts.findOne(id);
 	if (!post) throw new Meteor.Error('Could not find post');
-	if (!checkUserRights(userId, post)) throw new Meteor.Error(403);
+	checkUserRights(userId, post);
+	var wasPublished = post.published,
+		now = new Date();
 	post.published = options.publish;
+	post.published_at = post.published && Date.parse(options.date) || null;
 	if (post.published) {
-		var now = new Date();
-		post.published_at = options.date || now;
+		if (wasPublished) throw new Meteor.Error(500);
+		post.published_at = new Date(post.published_at);
 		if (post.published_at < now) post.published_at = now;
 		if (post.published_at > now) post.published = false;
 	}
-	logger.log('verbose', 'Publishing blog post', post);
+	logger.log('verbose', 'Changing blog post publish/schedule', post);
+	unschedulePost(post);
 	BlogPosts.update({_id: id}, {$set: { published: post.published, published_at: post.published_at }});
-	if (post.published_at > now) schedulePost(post);
-	if (options.publish) {
-		var date = moment(post.published_at);
+	if (!post.published && post.published_at > now) schedulePost(post);
+	if (post.published_at <= now) {
+		var date = moment(post.published_at || post.created_at);
 		return {
 			year: date.year(),
 			month: ('0' + (date.month()+1)).slice(-2)
@@ -76,7 +80,7 @@ toggleBlogPostPublish = function toggleBlogPostPublish (options) {
 
 function checkUserRights (userId, postId) {
 	var post = _.isObject(postId) ? postId : BlogPosts.findOne(postId);
-	return Roles.userIsInRole(userId, Blog.config('roles.admin')) || post.created_by === userId;
+	if (!(Roles.userIsInRole(userId, Blog.config('roles.admin')) || post.created_by === userId)) throw new Meteor.Error(403);
 }
 
 function getUniqueSlug(title, id) {

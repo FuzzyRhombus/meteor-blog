@@ -1,0 +1,151 @@
+.rydm-vcenter {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.rydm-btn {
+  @extend .rydm-vcenter;
+  padding-left: 10px;
+  padding-right: 10px;
+  text-transform: none;
+  font-size: 0.8rem;
+  margin-bottom: 0.1rem;
+}
+
+input { margin-bottom: 0.1rem;}
+
+.btn-icon {
+  @extend .rydm-vcenter;
+  //font-size: 1.1rem;
+  margin-left: -5px;
+  margin-right: 5px;
+  line-height: 0;
+}
+
+@mixin collapsible ($duration) {
+  overflow: hidden;
+  opacity: 1;
+  -webkit-transition-property: max-height, opacity;
+  -webkit-transition-duration: $duration;
+  -webkit-transition-timing-function: ease-out;
+  transition-property: max-height, opacity;
+  transition-duration: $duration;
+  transition-timing-function: ease-out;
+}
+
+.blog-controls {
+  width: 100%;
+  position: relative;
+  @include collapsible(0.25s);
+  max-height:200px;
+
+  .auth-notice {
+    position: relative;
+    padding: 0.3rem;
+    width: 100%;
+    margin-bottom: 1px;
+    padding-left: 0.7rem;
+    @include collapsible(0.25s);
+    max-height: 50px;
+    overflow: hidden;
+
+    a.rydm-btn {
+      position: absolute;
+      top: 0;
+      right: 4rem;
+      height: 30px;
+    }
+  }
+
+  input.schedule {
+    width: 12rem;
+    margin-bottom: 1px;
+  }
+  input::-webkit-outer-spin-button, /* Removes arrows */
+  input::-webkit-inner-spin-button, /* Removes arrows */
+  input::-webkit-clear-button { /* Removes blue cross */
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.blog-post {
+  article {
+    display: inline-block;
+    vertical-align: top;
+  }
+  #content {  left: 0;
+    width: 49%;
+    height: 100%;
+    padding: 1rem;
+    margin-right: 1rem;
+    border-right: 1px solid #aaa;
+  }
+  #content:focus {
+    outline: none;
+    background: #ddd;
+  }
+}
+
+.hide-collapse {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  padding: 0 !important;
+}
+
+//.blog-list {
+//  margin: 20px;
+//  .blog-post {
+//    margin: 50px 0;
+//    border-bottom: 2px solid rgba(0,0,0,0.2);
+//
+//    header {
+//      h1 {
+//        margin: 0;
+//      }
+//      .info {
+//        border-bottom: 1px dashed rgba(0,0,0,0.2);
+//        opacity: .8;
+//        .author {
+//        }
+//        time {
+//        }
+//      }
+//    }
+//    summary {
+//      font-size: medium;
+//      margin: 20px 0;
+//    }
+//  }
+//}
+//
+//.blog-post {
+//  header {
+//    h1 {
+//    }
+//    .info {
+//      color: #666;
+//
+//      .author {
+//        font-weight: bold;
+//        color: orange;
+//      }
+//      time {
+//        font-style: italic;
+//      }
+//    }
+//  }
+//  article {
+//    &.editing {
+//      float: left;
+//      background-color: rgba(0,0,0,.1);
+//      width: 49%;
+//      margin-top: 1em;
+//    }
+//  }
+//  #mdblog-clone {
+//    float: right;
+//    width: 49%;
+//  }
+//}

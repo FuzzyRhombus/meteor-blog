@@ -1,30 +1,30 @@
-Template.blogList.rendered = function () {
-	Tracker.autorun(function () {
-		Session.get('locale'); // force dependency
-		setHtmlMeta({
-			title: TAPi18n.__("name"),
-			description: TAPi18n.__("description")
-		});
+Template.blogList.onRendered(function () {
+	var self = this;
+	$(document).ready(function () {
+		self.$('.tooltipped').tooltip({delay: 100});
 	});
-};
+});
 
-Template.blogList.created = function () {
+Template.blogList.onCreated(function () {
 	var self = this;
 	self.serverBlogCount = new ReactiveVar(false);
 	self.autorun(function () {
 		Meteor.call('mdBlogCount', function (err, serverBlogCount) {
 			self.serverBlogCount.set(serverBlogCount);
 		});
+		self.subscribe('blog.posts');
+
 	});
 	self.autorun(function () {
-		self.subscribe('blog.posts');
-	})
-};
+		Session.get('locale'); // force dependency
+		setHtmlMeta({
+			title: TAPi18n.__("name"),
+			description: TAPi18n.__("description")
+		});
+	});
+});
 
 Template.blogList.helpers({
-	content: function () {
-		return this.summary;
-	},
 	posts: function () {
 		var sort = Blog.config('sortBy');
 		var year = FlowRouter.getParam('year'),
@@ -39,6 +39,9 @@ Template.blogList.helpers({
 				{ created_at: range}
 			]}, { sort: sort ? sort : { date: -1 } });
 		}
+	},
+	postTemplate: function () {
+		return Blog.config('templates.listPost') || 'blogListPostDefault';
 	}
 });
 

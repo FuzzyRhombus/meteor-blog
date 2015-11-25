@@ -22,7 +22,7 @@
 		blogRoutes.route('/', {
 			name: 'blogBase',
 			action: function () {
-				BlazeLayout.render('blogList');
+				render('blogList');
 			}
 		});
 
@@ -51,8 +51,17 @@
 				//var range = getDateRange(params.year, params.month);
 				//if (range) FlowRouter.setParams({date: range});
 			}
-			if (route === 'blogPost' && params.slug) BlazeLayout.render('blogPost');
-			else BlazeLayout.render('blogList');
+			render(route === 'blogPost' && params.slug ? 'blogPostWrapper' : 'blogList');
+		}
+
+		function render(template) {
+			if (Blog.config('templates.layout')) {
+				var section = Blog.config('templates.layoutTarget') || 'main';
+				var opts = {};
+				opts[section] = template;
+				BlazeLayout.render(Blog.config('templates.layout'), opts);
+			}
+			else BlazeLayout.render(template);
 		}
 	}
 

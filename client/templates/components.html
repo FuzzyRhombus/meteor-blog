@@ -1,0 +1,33 @@
+<template name="blogPostTitle">
+    <a href="{{blogPathFor this}}"><h2 id="title" {{contenteditable}} {{authorTip 'title'}}>{{title}}</h2></a>
+</template>
+
+<template name="blogPostSummary">
+    {{#if showSummary}}
+    <h5 id="summary" {{contenteditable}} {{authorTip 'summary'}}>{{summary}}</h5>
+    {{/if}}
+</template>
+
+<template name="blogPostInfo">
+    <div class="info">
+        {{_ "posted_by"}}<span class="author">{{authorName created_by}}</span>
+        <time>{{prettifyDate date}}</time>
+    </div>
+</template>
+
+<template name="blogPostContent">
+    {{#if authorLoggedIn}}
+    <article id="content" {{contenteditable}} style="display:none;"></article>
+    {{/if}}
+    <article id="md-content" {{authorTip 'content'}}>
+        {{#markdown}}{{content}}{{/markdown}}
+    </article>
+</template>
+
+<template name="blogPostEdited">
+    {{#if isEdited}}
+        <span class="info">
+            {{_ "edited_at"}}<time>{{prettifyDate updated_at}}</time>{{_ "edited_by"}}<span class="author">{{authorName updated_by}}</span>
+        </span>
+    {{/if}}
+</template>

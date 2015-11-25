@@ -18,7 +18,7 @@ Package.onUse(function (api) {
 
 	var clientServer = ['client', 'server'];
 
-	api.use(['meteor-platform@1.2.0', 'less@2.5.0']);
+	api.use(['meteor-platform@1.2.0']);
 	api.use(['spiderable@1.0.5']);
 	api.use(['reactive-var@1.0.3'], clientServer);
 	api.use(['email@1.0.5']);
@@ -45,7 +45,9 @@ Package.onUse(function (api) {
 		'simple:highlight.js@1.2.0',
 		'fortawesome:fontawesome@4.2.0_2',
 		'cfs:dropped-event@0.0.10',
-		'ccorcos:clientside-image-manipulation@1.0.3'
+		'ccorcos:clientside-image-manipulation@1.0.3',
+	    'materialize:materialize@0.97.2',
+		'fourseven:scss@3.4.1'
 	], ['client']);
 
 	// Common
@@ -71,20 +73,24 @@ Package.onUse(function (api) {
 
 	// Client
 	api.addFiles([
+		'client/head.html',
+		'client/templates/components.html',
 		'client/templates/list.html',
 	    'client/templates/post.html',
 		'client/templates/controls.html',
 		'client/helpers.js',
-		'client/controls.js',
 		'client/image-upload.js',
-		'client/post.js',
+		'client/post/controls.js',
+		'client/post/components.js',
+		'client/post/post.js',
 		'client/list.js',
-		'client/blog-route.js',
-		'client/blog.less'
+		'client/routes.js',
+	    'client/style.scss'
 	], 'client');
 
 	api.addAssets([
-		'public/blank.png'
+		'public/blank.png',
+	    'client/style.scss' // expose for @import in scss files
 	], 'client');
 
 	// List languages files so Meteor will watch them and rebuild package as they change.
@@ -97,6 +103,6 @@ Package.onUse(function (api) {
 	], clientServer);
 
 	api.imply('kadira:flow-router');
+	api.imply('kadira:blaze-layout');
 	api.export('Blog', clientServer);
-
 });
