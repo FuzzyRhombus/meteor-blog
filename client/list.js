@@ -18,7 +18,7 @@ Template.blogList.onCreated(function () {
 	self.autorun(function () {
 		Session.get('locale'); // force dependency
 		setHtmlMeta({
-			title: TAPi18n.__("name"),
+			title: TAPi18n.__("title"),
 			description: TAPi18n.__("description")
 		});
 	});

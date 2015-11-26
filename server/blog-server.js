@@ -14,7 +14,7 @@
 				logger.error('Insufficient auth requested for method', { fn: func, user: userId });
 				throw new Meteor.Error(403, "Not authorized");
 			}
-		}
+		};
 	};
 
 	Meteor.methods({
@@ -76,6 +76,8 @@
 				try {
 					route = path.join('/', routes.base, routes.rss);
 					logger.info('Setting up RSS feed at (' + route + ')');
+					logger.log('verbose', 'Add the following to your <head> to ensure RSS is discoverable:\n' +
+					           '<link rel="alternate" type="application/rss+xml" title="' + TAPi18n.__('title') + '" href="' + route + '">');
 					RoutePolicy.declare(route, 'network');
 					WebApp.connectHandlers.use(route, staticReqHandler(getRssFeed));
 				}
