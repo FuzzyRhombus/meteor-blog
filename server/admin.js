@@ -99,8 +99,9 @@ function getUniqueSlug(title, id) {
 }
 
 function getSlug (title) {
-	var replace = ' `~!@#$%^&*()[]{}=+"\':;<>,.\\/?|\t',
-		slug = title.toLocaleLowerCase();
-	return slug.replace(new RegExp(_.reduce(replace, function (m, c) { return m + '\\' + c; }, '[') + ']', 'gi'), '-')
-		.replace(/-+$/, '');
+	var slug = title.toLocaleLowerCase(),
+		config = Blog.config('slug'),
+		replacement = (config.replaceWith || '-')[0].toString();
+	return slug.replace(new RegExp(_.reduce(config.replaceChars+'\s', function (m, c) { return m + '\\' + c; }, '([') + '])+', 'gim'), replacement)
+		.replace(new RegExp(replacement + replacement +'+$'), replacement);
 }
