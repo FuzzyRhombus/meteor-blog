@@ -23,7 +23,7 @@
             </a>
         </section>
         <footer>
-            <a href="#publishModal{{_id}}" title="Publish" id="publishPostBtn" class="btn rydm-btn waves-effect waves-light blue modal-trigger">
+            <a href="#publishModal{{_id}}" title="Publish" id="publishPostBtn{{_id}}" class="btn rydm-btn waves-effect waves-light blue modal-trigger">
                 {{#if published}}
                 <i class="material-icons btn-icon">mode_edit</i>{{_ 'unpublish'}}
                 {{else}}
@@ -37,7 +37,7 @@
                 <i class="material-icons btn-icon">schedule</i>{{_ 'schedule'}}
             </button>
             {{/unless}}
-            <a href="#deleteModal{{_id}}" id="deletePostBtn" class="btn-floating tooltipped right waves-effect waves-light red tooltipped modal-trigger"
+            <a href="#deleteModal{{_id}}" id="deletePostBtn{{_id}}" class="btn-floating tooltipped right waves-effect waves-light red tooltipped modal-trigger"
                data-position="left" data-tooltip="{{_ 'delete'}}" style="position:absolute;top:0;right:0;margin-right:0.3rem;">
                 <i class="material-icons">delete</i>
             </a>
@@ -57,7 +57,7 @@
         </div>
         <div class="modal-footer">
             <a href="" class="modal-action modal-close btn-flat waves-effect left rydm-vcenter"><i class="material-icons btn-icon">cancel</i> {{_ 'cancel'}}</a>
-            <a href="" id="deleteConfirmBtn" class="modal-action waves-effect btn-flat rydm-vcenter"><i class="material-icons btn-icon">delete</i>{{_ 'delete'}}</a>
+            <a href="" id="deleteConfirmBtn" class="modal-action modal-close waves-effect btn-flat rydm-vcenter"><i class="material-icons btn-icon">delete</i>{{_ 'delete'}}</a>
         </div>
     </section>
 
